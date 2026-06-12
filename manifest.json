@@ -1,0 +1,17 @@
+{
+  "name": "Barista Training",
+  "short_name": "Barista",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fdf8f6",
+  "theme_color": "#8c5a46",
+  "description": "ฝึกฝนการชงกาแฟและเครื่องดื่มสำหรับบาริสต้า",
+  "icons": [
+    {
+      "src": "img/icon.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
