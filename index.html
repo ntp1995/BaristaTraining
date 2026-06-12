@@ -45,6 +45,10 @@
                             '0%': { transform: 'translateY(-50px) scale(0.5)', opacity: '0' },
                             '70%': { transform: 'translateY(10px) scale(1.1)', opacity: '1' },
                             '100%': { transform: 'translateY(0) scale(1)', opacity: '1' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
                         }
                     },
                     animation: {
@@ -53,6 +57,7 @@
                         pulseFast: 'pulse 0.5s ease-in-out',
                         liquidFill: 'liquidFill 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
                         dropIn: 'dropIn 0.5s ease-out forwards',
+                        float: 'float 3s ease-in-out infinite',
                     }
                 }
             }
@@ -72,13 +77,16 @@
         <div class="max-w-md mx-auto flex justify-between items-center">
             <h1 class="text-lg font-bold"><i class="fa-solid fa-mug-hot mr-2"></i> Barista Training</h1>
             
-            <div id="game-stats" class="hidden flex space-x-2">
+            <div id="game-stats" class="hidden flex items-center space-x-2">
                 <div class="bg-brand-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center">
                     <i class="fa-regular fa-clock mr-1"></i> <span id="timer-display">00:00</span>
                 </div>
                 <div class="bg-brand-800 px-3 py-1 rounded-full text-xs font-semibold">
                     ⭐ <span id="current-score" class="text-green-300">0</span> / <span id="total-score">0</span>
                 </div>
+                <button onclick="goToHome()" class="bg-red-500 hover:bg-red-600 px-2 py-1 rounded-full text-white transition flex items-center justify-center shadow-sm ml-2" title="กลับหน้าแรก">
+                    <i class="fa-solid fa-house text-xs"></i>
+                </button>
             </div>
         </div>
         <!-- Progress Bar -->
@@ -89,14 +97,47 @@
         </div>
     </header>
 
+    <!-- Custom Alert Modal -->
+    <div id="custom-alert-modal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full text-center border-t-4 border-red-500 animate-popIn relative">
+            <div class="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <i class="fa-solid fa-xmark text-3xl text-red-500"></i>
+            </div>
+            <h2 class="text-xl font-bold text-gray-900 mb-2">ไม่ถูกต้อง!</h2>
+            <p id="custom-alert-message" class="text-gray-600 mb-6 text-sm"></p>
+            <button id="custom-alert-btn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-xl transition duration-300 shadow-md">
+                จำไว้ใช้รอบหน้า
+            </button>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="custom-confirm-modal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full text-center border-t-4 border-yellow-500 animate-popIn relative">
+            <div class="w-16 h-16 mx-auto bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+                <i class="fa-solid fa-triangle-exclamation text-3xl text-yellow-500"></i>
+            </div>
+            <h2 class="text-xl font-bold text-gray-900 mb-2">ยืนยันการยกเลิก</h2>
+            <p id="custom-confirm-message" class="text-gray-600 mb-6 text-sm"></p>
+            <div class="flex space-x-3">
+                <button id="custom-confirm-cancel" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-4 rounded-xl transition duration-300 shadow-sm">
+                    เล่นต่อ
+                </button>
+                <button id="custom-confirm-ok" class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-xl transition duration-300 shadow-md">
+                    ยกเลิกฝึก
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main class="flex-grow flex flex-col items-center p-4">
         <div class="max-w-md w-full relative flex-grow flex flex-col">
 
             <!-- หน้าแรก (Start Screen) -->
             <div id="start-screen" class="bg-white rounded-2xl shadow-xl p-8 text-center border border-brand-100 mt-6 animate-popIn">
-                <div class="w-20 h-20 mx-auto bg-brand-50 rounded-full flex items-center justify-center mb-4">
-                    <i class="fa-solid fa-stopwatch text-4xl text-brand-500"></i>
+                <div class="relative w-40 h-40 mx-auto mb-2">
+                    <img src="img/barista.png" class="w-full h-full object-contain animate-float mix-blend-multiply" alt="Barista Character">
                 </div>
                 <h2 class="text-2xl font-bold text-brand-900 mb-2">ทดสอบความเร็ว & แม่นยำ</h2>
                 <p class="text-gray-600 mb-6 text-sm">เลือกลำดับส่วนผสมให้ถูกต้องและทำเวลาให้ดีที่สุด หรือท้าทายด้วยโหมดพิมพ์ตอบเพื่อความแม่นยำ 100%</p>
@@ -213,7 +254,10 @@
 
             <!-- หน้าสรุปผล (Result Screen) -->
             <div id="result-screen" class="hidden bg-white rounded-2xl shadow-xl p-8 text-center border border-brand-100 mt-6">
-                <div id="result-icon" class="w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 text-4xl">🏆</div>
+                <div class="relative w-32 h-32 mx-auto mb-2">
+                    <img src="img/barista.png" class="w-full h-full object-contain animate-float mix-blend-multiply" alt="Barista Character">
+                </div>
+                <div id="result-icon" class="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-2 text-3xl">🏆</div>
                 <h2 class="text-2xl font-bold text-brand-900 mb-1">จบกะการทำงาน!</h2>
                 
                 <div class="bg-gray-50 rounded-xl p-4 my-6 grid grid-cols-2 gap-4 border border-gray-100">
@@ -231,8 +275,11 @@
                 
                 <p id="result-message" class="font-medium text-sm mb-6 text-brand-800 px-2"></p>
                 
-                <button onclick="initGame()" class="w-full bg-brand-600 hover:bg-brand-800 text-white font-bold py-3 px-6 rounded-xl transition duration-300 shadow-md">
+                <button onclick="initGame()" class="w-full bg-brand-600 hover:bg-brand-800 text-white font-bold py-3 px-6 rounded-xl transition duration-300 shadow-md mb-3">
                     เริ่มกะใหม่
+                </button>
+                <button onclick="goToHome()" class="w-full bg-brand-100 hover:bg-brand-200 text-brand-800 font-bold py-3 px-6 rounded-xl transition duration-300 shadow-md">
+                    กลับหน้าแรก
                 </button>
             </div>
 
@@ -350,6 +397,37 @@
             return { color: 'rgba(200, 200, 200, 0.6)', icon: '✨' };
         }
 
+        function showCustomConfirm(message, onConfirm) {
+            const modal = document.getElementById('custom-confirm-modal');
+            const msgObj = document.getElementById('custom-confirm-message');
+            const btnOk = document.getElementById('custom-confirm-ok');
+            const btnCancel = document.getElementById('custom-confirm-cancel');
+            
+            msgObj.textContent = message;
+            modal.classList.remove('hidden');
+            
+            btnOk.onclick = () => {
+                modal.classList.add('hidden');
+                if (onConfirm) onConfirm();
+            };
+            
+            btnCancel.onclick = () => {
+                modal.classList.add('hidden');
+            };
+        }
+
+        function goToHome() {
+            if (!document.getElementById('game-screen').classList.contains('hidden')) {
+                showCustomConfirm("คุณต้องการยกเลิกการฝึกและกลับหน้าแรกหรือไม่?", () => {
+                    clearInterval(timerInterval);
+                    initGame();
+                });
+            } else {
+                clearInterval(timerInterval);
+                initGame();
+            }
+        }
+
         function initGame() {
             document.getElementById('start-screen').classList.remove('hidden');
             document.getElementById('game-screen').classList.add('hidden');
@@ -424,7 +502,24 @@
                 typingContainer.classList.add('hidden');
                 
                 optionsContainer.innerHTML = '';
-                const options = [step.correct, ...step.wrong];
+                let options = [step.correct, ...step.wrong];
+                
+                // เพิ่มตัวหลอก (Distractors) ให้มี 4 ตัวเลือก
+                let allOptions = [];
+                menuDatabase.forEach(m => m.steps.forEach(s => {
+                    allOptions.push(s.correct);
+                    allOptions.push(...s.wrong);
+                }));
+                // เอาตัวเลือกที่ซ้ำและตัวที่มีอยู่แล้วออก
+                allOptions = [...new Set(allOptions)].filter(opt => !options.includes(opt));
+                // สุ่มลำดับตัวเลือกหลอกทั้งหมด
+                allOptions.sort(() => 0.5 - Math.random());
+                
+                // ดึงมาเติมให้ได้ 4 ตัวเลือก (หรือ 5 เพื่อความท้าทาย แต่ปกติ 4 กำลังดี)
+                while (options.length < 4 && allOptions.length > 0) {
+                    options.push(allOptions.pop());
+                }
+
                 const shuffledOptions = options.sort(() => 0.5 - Math.random());
                 
                 shuffledOptions.forEach(opt => {
@@ -471,8 +566,9 @@
                 setTimeout(() => document.body.classList.remove('animate-shake'), 400);
                 
                 if (gameMode === 'choice') {
-                    alert(`ผิด! ที่ถูกต้องคือ: ${step.correct}`);
-                    nextStep();
+                    showCustomAlert(step.correct, () => {
+                        nextStep();
+                    });
                 } else {
                     const feedback = document.getElementById('typing-feedback');
                     feedback.textContent = 'ยังไม่ถูกต้อง ลองอีกครั้ง!';
@@ -487,14 +583,62 @@
             const menu = playList[currentMenuIndex];
             const step = menu.steps[currentStepIndex];
             
-            const normalizedInput = input.replace(/\s+/g, '').toLowerCase();
-            const normalizedCorrect = step.correct.replace(/\s+/g, '').toLowerCase();
+            let nInput = input.toLowerCase().replace(/1\s*[½]|1\s*1\/2/g, '1.5').replace(/[½]|1\/2/g, '0.5');
+            let nCorrect = step.correct.toLowerCase().replace(/1\s*[½]|1\s*1\/2/g, '1.5').replace(/[½]|1\/2/g, '0.5');
             
-            if (normalizedCorrect.includes(normalizedInput) && input.length >= 2 || normalizedInput === normalizedCorrect) {
+            let exactMatch = nInput.replace(/\s+/g, '') === nCorrect.replace(/\s+/g, '');
+            let isSmartMatch = true;
+            
+            let inputNums = nInput.match(/\d+(\.\d+)?/g) || [];
+            let correctNums = nCorrect.match(/\d+(\.\d+)?/g) || [];
+            
+            if (inputNums.length > 0) {
+                let numsOk = inputNums.every(num => correctNums.includes(num));
+                if (!numsOk) isSmartMatch = false;
+            } else {
+                if (correctNums.length > 0) isSmartMatch = false;
+            }
+            
+            if (isSmartMatch) {
+                const stripRegex = /\d+(\.\d+)?|ml\.?|oz\.?|g\.?|ช้อน(เล็ก)?|วินาที|%/g;
+                let textInput = nInput.replace(stripRegex, ' ').trim();
+                let textCorrect = nCorrect.replace(stripRegex, '').replace(/\s+/g, '');
+                
+                if (textInput.length > 0) {
+                    let words = textInput.split(/\s+/).filter(w => w.length > 0);
+                    for (let word of words) {
+                        let i = 0, j = 0;
+                        while (i < word.length && j < textCorrect.length) {
+                            if (word[i] === textCorrect[j]) i++;
+                            j++;
+                        }
+                        if (i !== word.length) {
+                            isSmartMatch = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if (exactMatch || isSmartMatch) {
                  checkAnswer(step.correct);
             } else {
-                 checkAnswer(input); // will trigger wrong answer
+                 checkAnswer(input);
             }
+        }
+
+        function showCustomAlert(correctAnswer, callback) {
+            const modal = document.getElementById('custom-alert-modal');
+            const msgObj = document.getElementById('custom-alert-message');
+            const btn = document.getElementById('custom-alert-btn');
+            
+            msgObj.innerHTML = `ที่ถูกต้องคือ:<br><span class="font-bold text-lg text-brand-900 mt-1 block">${correctAnswer}</span>`;
+            modal.classList.remove('hidden');
+            
+            btn.onclick = () => {
+                modal.classList.add('hidden');
+                if (callback) callback();
+            };
         }
 
         function showTypingHint() {
