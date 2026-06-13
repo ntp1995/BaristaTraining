@@ -17,65 +17,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Confetti JS -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Prompt', 'sans-serif'] },
-                    colors: {
-                        brand: {
-                            50: '#fdf8f6', 100: '#f2e8e5', 400: '#d4a373',
-                            500: '#b87c67', 600: '#8c5a46', 800: '#5c3a2d', 900: '#3d251d',
-                        }
-                    },
-                    keyframes: {
-                        shake: {
-                            '0%, 100%': { transform: 'translateX(0)' },
-                            '25%': { transform: 'translateX(-5px)' },
-                            '50%': { transform: 'translateX(5px)' },
-                            '75%': { transform: 'translateX(-5px)' },
-                        },
-                        popIn: {
-                            '0%': { opacity: '0', transform: 'scale(0.9) translateY(10px)' },
-                            '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
-                        },
-                        pulse: {
-                            '0%, 100%': { transform: 'scale(1)' },
-                            '50%': { transform: 'scale(1.05)' },
-                        },
-                        liquidFill: {
-                            '0%': { transform: 'scaleY(0)', transformOrigin: 'bottom' },
-                            '100%': { transform: 'scaleY(1)', transformOrigin: 'bottom' },
-                        },
-                        dropIn: {
-                            '0%': { transform: 'translateY(-50px) scale(0.5)', opacity: '0' },
-                            '70%': { transform: 'translateY(10px) scale(1.1)', opacity: '1' },
-                            '100%': { transform: 'translateY(0) scale(1)', opacity: '1' },
-                        },
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0px)' },
-                            '50%': { transform: 'translateY(-10px)' },
-                        }
-                    },
-                    animation: {
-                        shake: 'shake 0.4s ease-in-out',
-                        popIn: 'popIn 0.3s ease-out forwards',
-                        pulseFast: 'pulse 0.5s ease-in-out',
-                        liquidFill: 'liquidFill 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
-                        dropIn: 'dropIn 0.5s ease-out forwards',
-                        float: 'float 3s ease-in-out infinite',
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { background-color: #fdf8f6; }
-        .glass-container::-webkit-scrollbar, .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .glass-container::-webkit-scrollbar-track, .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .glass-container::-webkit-scrollbar-thumb, .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
-    </style>
+    <script src="js/tailwind-config.js"></script>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="text-gray-800 min-h-screen flex flex-col font-sans">
 
@@ -147,6 +93,12 @@
                     <img src="img/barista.png" class="w-full h-full object-contain animate-float mix-blend-multiply" alt="Barista Character">
                 </div>
                 <h2 class="text-2xl font-bold text-brand-900 mb-2">ทดสอบความเร็ว & แม่นยำ</h2>
+                
+                <!-- Daily Streak Badge -->
+                <div id="daily-streak-badge" class="inline-flex items-center bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-bold mb-4 hidden border border-orange-200">
+                    <i class="fa-solid fa-fire mr-1"></i> เข้าฝึกต่อเนื่อง <span id="daily-streak-count" class="ml-1">0</span> วัน
+                </div>
+
                 <p class="text-gray-600 mb-6 text-sm">เลือกลำดับส่วนผสมให้ถูกต้องและทำเวลาให้ดีที่สุด หรือท้าทายด้วยโหมดพิมพ์ตอบเพื่อความแม่นยำ 100%</p>
                 
                 <!-- Best Stats -->
@@ -162,6 +114,28 @@
                             <span id="best-time" class="font-bold text-brand-600 text-lg">-</span>
                         </div>
                     </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1 text-left">เลือกหมวดหมู่</label>
+                    <select id="category-select" class="w-full border-2 border-brand-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-brand-500">
+                        <option value="all">🎲 สุ่มทุกเมนู (ดั้งเดิม)</option>
+                        <option value="coffee">☕ กาแฟ (อเมริกาโน่, ลาเต้, มัคคิอาโต)</option>
+                        <option value="tea">🧋 ชา (ชาไทย, ชาเขียว, มัทฉะ, ชาพีช)</option>
+                        <option value="milk">🥛 นม และ โกโก้ (นมสด, นมชมพู, โกโก้)</option>
+                        <option value="coldfoam">☁️ โคลด์โฟม</option>
+                    </select>
+                </div>
+
+                <div class="mb-6 flex items-center justify-between bg-red-50 p-3 rounded-xl border border-red-100">
+                    <div class="text-left">
+                        <span class="block text-sm font-bold text-red-600">⏱️ Time Attack Mode</span>
+                        <span class="text-xs text-red-400">10 วินาที / ขั้นตอน</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="time-attack-toggle" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+                    </label>
                 </div>
 
                 <div class="flex flex-col space-y-3">
@@ -280,6 +254,13 @@
                     </div>
                 </div>
                 
+                <div id="analytics-container" class="bg-red-50 rounded-xl p-4 my-4 hidden border border-red-100 text-left">
+                    <h3 class="text-sm font-bold text-red-800 mb-2 flex items-center"><i class="fa-solid fa-chart-line mr-2"></i> จุดที่ควรทบทวน (มักจะตอบผิด)</h3>
+                    <ul id="weakness-list" class="text-xs text-red-600 space-y-1">
+                        <!-- รายการที่ผิดบ่อย -->
+                    </ul>
+                </div>
+                
                 <p id="result-message" class="font-medium text-sm mb-6 text-brand-800 px-2"></p>
                 
                 <button onclick="initGame()" class="w-full bg-brand-600 hover:bg-brand-800 text-white font-bold py-3 px-6 rounded-xl transition duration-300 shadow-md mb-3">
@@ -293,585 +274,8 @@
         </div>
     </main>
 
-    <script>
-        // ข้อมูลเมนู Database แบบสมบูรณ์ (46 เมนู แยก Step ชัดเจน)
-        const menuDatabase = [
-            // ลาเต้
-            { name: "ลาเต้ 16oz. (หวานปกติ)", steps: [ { instruction: "เบสกาแฟ", correct: "กาแฟ 50ml.", wrong: ["กาแฟ 2oz. (60ml.)"] }, { instruction: "นม", correct: "นมLay 120ml.", wrong: ["นมสด 100ml."] }, { instruction: "ความหวาน", correct: "นมข้น หวานปกติ 20ml.", wrong: ["นมข้น 10ml."] } ] },
-            { name: "ลาเต้ 16oz. (หวานน้อย)", steps: [ { instruction: "เบสกาแฟ", correct: "กาแฟ 50ml.", wrong: ["กาแฟ 2oz. (60ml.)"] }, { instruction: "นม", correct: "นมLay 120ml.", wrong: ["นมสด 100ml."] }, { instruction: "ความหวาน", correct: "นมข้น หวานน้อย 10ml.", wrong: ["นมข้น 20ml."] } ] },
-
-            // อเมริกาโน่พีช
-            { name: "อเมริกาโน่พีช 16oz. (หวานปกติ)", steps: [ { instruction: "เบสกาแฟ", correct: "กาแฟ 2oz.", wrong: ["กาแฟ 50ml."] }, { instruction: "ปริมาณชาพีช", correct: "หวานปกติ ผงชาพีช 3 ช้อน", wrong: ["ผงชาพีช 2 ช้อน"] }, { instruction: "ละลายชา", correct: "น้ำร้อน 3oz.", wrong: ["น้ำร้อน 4oz."] }, { instruction: "เติมน้ำ", correct: "น้ำเปล่า 30 ml.", wrong: ["น้ำเปล่า 60 ml."] } ] },
-            { name: "อเมริกาโน่พีช 16oz. (หวานน้อย)", steps: [ { instruction: "เบสกาแฟ", correct: "กาแฟ 2oz.", wrong: ["กาแฟ 50ml."] }, { instruction: "ปริมาณชาพีช", correct: "หวานน้อย ผงชาพีช 2 ช้อน", wrong: ["ผงชาพีช 3 ช้อน"] }, { instruction: "ละลายชา", correct: "น้ำร้อน 3oz.", wrong: ["น้ำร้อน 4oz."] }, { instruction: "เติมน้ำ", correct: "น้ำเปล่า 30 ml.", wrong: ["น้ำเปล่า 60 ml."] } ] },
-
-            // อเมริกาโน่น้ำผึ้ง
-            { name: "อเมริกาโน่น้ำผึ้ง 16oz. (คั่วเข้ม หวานปกติ)", steps: [ { instruction: "เบสกาแฟ", correct: "คั่วเข้ม 50ml.", wrong: ["คั่วกลาง 50ml."] }, { instruction: "เติมน้ำ", correct: "น้ำ 120ml.", wrong: ["น้ำ 100ml."] }, { instruction: "ความหวาน", correct: "น้ำผึ้ง หวานปกติ 30ml.", wrong: ["น้ำผึ้ง 15ml."] } ] },
-            { name: "อเมริกาโน่น้ำผึ้ง 16oz. (คั่วกลาง หวานน้อย)", steps: [ { instruction: "เบสกาแฟ", correct: "คั่วกลาง 50ml.", wrong: ["คั่วเข้ม 50ml."] }, { instruction: "เติมน้ำ", correct: "น้ำ 100ml.", wrong: ["น้ำ 120ml."] }, { instruction: "ความหวาน", correct: "น้ำผึ้ง หวานน้อย 15ml.", wrong: ["น้ำผึ้ง 30ml."] } ] },
-
-            // ชาพีช
-            { name: "ชาพีช 16oz. (หวานปกติ)", steps: [ { instruction: "ละลายชา", correct: "น้ำร้อน 3 oz.", wrong: ["น้ำร้อน 4 oz."] }, { instruction: "ปริมาณชาพีช", correct: "หวานปกติ ผงชาพีช 3 ช้อน", wrong: ["ผงชาพีช 2 ช้อน"] }, { instruction: "เติมน้ำ", correct: "น้ำเปล่า 60 ml.", wrong: ["น้ำเปล่า 30 ml."] } ] },
-            { name: "ชาพีช 16oz. (หวานน้อย)", steps: [ { instruction: "ละลายชา", correct: "น้ำร้อน 3 oz.", wrong: ["น้ำร้อน 4 oz."] }, { instruction: "ปริมาณชาพีช", correct: "หวานน้อย ผงชาพีช 2 ช้อน", wrong: ["ผงชาพีช 3 ช้อน"] }, { instruction: "เติมน้ำ", correct: "น้ำเปล่า 60 ml.", wrong: ["น้ำเปล่า 30 ml."] } ] },
-
-            // ชาไทย
-            { name: "ชาไทย 16oz. (หวานปกติ)", steps: [ { instruction: "สกัดแรก", correct: "ผงชาตรามือ 3 ช้อน สกัด 1oz.", wrong: ["ผงชา 2 ช้อน สกัด 1oz."] }, { instruction: "จังหวะชง", correct: "พักชา 10 วินาที", wrong: ["ไม่ต้องพักชา"] }, { instruction: "สกัดน้ำเพิ่ม", correct: "กดปุ่มน้ำเพิ่มอีก 3oz. รวมเป็น 4oz.", wrong: ["รวมเป็น 5oz."] }, { instruction: "ความมัน", correct: "ครีมเทียม 1 ช้อน", wrong: ["ไม่ใส่ครีมเทียม"] }, { instruction: "ความหวานหลัก", correct: "นมข้น หวานปกติ 30ml.", wrong: ["นมข้น 20ml."] }, { instruction: "ความหวานเสริม", correct: "ไซรัป 5ml.", wrong: ["ไม่ใส่ไซรัป"] } ] },
-            { name: "ชาไทย 16oz. (หวานน้อย)", steps: [ { instruction: "สกัดแรก", correct: "ผงชาตรามือ 3 ช้อน สกัด 1oz.", wrong: ["ผงชา 2 ช้อน สกัด 1oz."] }, { instruction: "จังหวะชง", correct: "พักชา 10 วินาที", wrong: ["ไม่ต้องพักชา"] }, { instruction: "สกัดน้ำเพิ่ม", correct: "กดปุ่มน้ำเพิ่มอีก 3oz. รวมเป็น 4oz.", wrong: ["รวมเป็น 5oz."] }, { instruction: "ความมัน", correct: "ครีมเทียม 1 ช้อน", wrong: ["ไม่ใส่ครีมเทียม"] }, { instruction: "ความหวานหลัก", correct: "นมข้น หวานน้อย 20 ml.", wrong: ["นมข้น 10ml."] }, { instruction: "ความหวานเสริม", correct: "ไซรัป 5ml.", wrong: ["ไม่ใส่ไซรัป"] } ] },
-            { name: "ชาไทย 16oz. (หวาน 25%)", steps: [ { instruction: "สกัดแรก", correct: "ผงชาตรามือ 3 ช้อน สกัด 1oz.", wrong: ["ผงชา 2 ช้อน สกัด 1oz."] }, { instruction: "จังหวะชง", correct: "พักชา 10 วินาที", wrong: ["ไม่ต้องพักชา"] }, { instruction: "สกัดน้ำเพิ่ม", correct: "กดปุ่มน้ำเพิ่มอีก 3oz. รวมเป็น 4oz.", wrong: ["รวมเป็น 5oz."] }, { instruction: "ความมัน", correct: "ครีมเทียม 1 ช้อน", wrong: ["ไม่ใส่ครีมเทียม"] }, { instruction: "ความหวานหลัก", correct: "หวาน 25% นมข้น 10ml.", wrong: ["นมข้น 15ml."] }, { instruction: "ความหวานเสริม", correct: "ไซรัป 5ml.", wrong: ["ไม่ใส่ไซรัป"] } ] },
-
-            // ชาเขียว
-            { name: "ชาเขียว 16oz. (หวานปกติ)", steps: [ { instruction: "สกัดแรก", correct: "ผงตรามือ 3 ช้อน สกัด 1oz.", wrong: ["ผงชา 2 ช้อน สกัด 1oz."] }, { instruction: "จังหวะชง", correct: "พักชา 10 วินาที", wrong: ["ไม่ต้องพักชา"] }, { instruction: "สกัดน้ำเพิ่ม", correct: "กดปุ่มน้ำเพิ่มอีก 3oz. รวมเป็น 4oz.", wrong: ["รวมเป็น 5oz."] }, { instruction: "ความหอม", correct: "ผงชาอโลม่า 1 ช้อนเล็ก", wrong: ["ไม่ใส่ผงชาอโลม่า"] }, { instruction: "ความมัน", correct: "ครีมเทียม 1 ช้อน", wrong: ["ไม่ใส่ครีมเทียม"] }, { instruction: "ความหวานหลัก", correct: "นมข้น หวานปกติ 30ml.", wrong: ["นมข้น 15ml."] }, { instruction: "ความหวานเสริม", correct: "ไซรัป 5ml.", wrong: ["ไม่ใส่ไซรัป"] } ] },
-            { name: "ชาเขียว 16oz. (หวานน้อย)", steps: [ { instruction: "สกัดแรก", correct: "ผงตรามือ 3 ช้อน สกัด 1oz.", wrong: ["ผงชา 2 ช้อน สกัด 1oz."] }, { instruction: "จังหวะชง", correct: "พักชา 10 วินาที", wrong: ["ไม่ต้องพักชา"] }, { instruction: "สกัดน้ำเพิ่ม", correct: "กดปุ่มน้ำเพิ่มอีก 3oz. รวมเป็น 4oz.", wrong: ["รวมเป็น 5oz."] }, { instruction: "ความหอม", correct: "ผงชาอโลม่า 1 ช้อนเล็ก", wrong: ["ไม่ใส่ผงชาอโลม่า"] }, { instruction: "ความมัน", correct: "ครีมเทียม 1 ช้อน", wrong: ["ไม่ใส่ครีมเทียม"] }, { instruction: "ความหวานหลัก", correct: "นมข้น หวานน้อย 15ml.", wrong: ["นมข้น 10ml."] }, { instruction: "ความหวานเสริม", correct: "ไซรัป 5ml.", wrong: ["ไม่ใส่ไซรัป"] } ] },
-            { name: "ชาเขียว 16oz. (หวาน 25%)", steps: [ { instruction: "สกัดแรก", correct: "ผงตรามือ 3 ช้อน สกัด 1oz.", wrong: ["ผงชา 2 ช้อน สกัด 1oz."] }, { instruction: "จังหวะชง", correct: "พักชา 10 วินาที", wrong: ["ไม่ต้องพักชา"] }, { instruction: "สกัดน้ำเพิ่ม", correct: "กดปุ่มน้ำเพิ่มอีก 3oz. รวมเป็น 4oz.", wrong: ["รวมเป็น 5oz."] }, { instruction: "ความหอม", correct: "ผงชาอโลม่า 1 ช้อนเล็ก", wrong: ["ไม่ใส่ผงชาอโลม่า"] }, { instruction: "ความมัน", correct: "ครีมเทียม 1 ช้อน", wrong: ["ไม่ใส่ครีมเทียม"] }, { instruction: "ความหวานหลัก", correct: "หวาน 25% นมข้น 10ml.", wrong: ["นมข้น 15ml."] }, { instruction: "ความหวานเสริม", correct: "ไซรัป 5ml.", wrong: ["ไม่ใส่ไซรัป"] } ] },
-
-            // นมชมพู
-            { name: "นมชมพู 16oz. (หวานปกติ)", steps: [ { instruction: "นม", correct: "นมLay 150ml.", wrong: ["นมสด 120ml."] }, { instruction: "สีและความหวาน", correct: "น้ำแดง 40ml.", wrong: ["น้ำแดง 20ml."] } ] },
-            { name: "นมชมพู 16oz. (หวาน 50%)", steps: [ { instruction: "นม", correct: "นมLay 150ml.", wrong: ["นมสด 120ml."] }, { instruction: "สีและความหวาน", correct: "หวาน 50% น้ำแดง 20 ml.", wrong: ["น้ำแดง 40ml."] } ] },
-
-            // นมสดเย็น
-            { name: "นมสดเย็น 16oz. (หวานปกติ)", steps: [ { instruction: "นม", correct: "นมLay 150ml.", wrong: ["นมสด 150ml."] }, { instruction: "ความหวาน", correct: "นมข้น หวานปกติ 30ml.", wrong: ["นมข้น 15ml."] } ] },
-            { name: "นมสดเย็น 16oz. (หวานน้อย)", steps: [ { instruction: "นม", correct: "นมLay 150ml.", wrong: ["นมสด 150ml."] }, { instruction: "ความหวาน", correct: "หวานน้อย 15ml.", wrong: ["นมข้น 10ml."] } ] },
-            { name: "นมสดเย็น 16oz. (หวาน 25%)", steps: [ { instruction: "นม", correct: "นมLay 150ml.", wrong: ["นมสด 150ml."] }, { instruction: "ความหวาน", correct: "หวาน 25% นมข้น 10 ml.", wrong: ["นมข้น 15ml."] } ] },
-
-            // ชาเขียวมะนาว
-            { name: "ชาเขียวมะนาว 16oz.", steps: [ { instruction: "สกัดแรก", correct: "ชาเขียว 3 ช้อน สกัด 1oz.", wrong: ["ชาเขียว 2 ช้อน สกัด 1oz."] }, { instruction: "จังหวะชง", correct: "พักชา 10 วินาที", wrong: ["ไม่ต้องพักชา"] }, { instruction: "สกัดน้ำเพิ่ม", correct: "กดปุ่มน้ำเพิ่มอีก 4oz. รวมเป็น 5oz.", wrong: ["รวมเป็น 4oz."] }, { instruction: "ความหวาน", correct: "ไซรัป 30ml.", wrong: ["ไซรัป 40ml."] }, { instruction: "ความเปรี้ยว", correct: "ผงมะนาว 1 ช้อนเล็ก (5 ml.)", wrong: ["ผงมะนาว 1 ½ ช้อน"] } ] },
-
-            // เมนูอื่นๆ
-            { name: "โกโก้ 16oz.", steps: [ { instruction: "ละลาย", correct: "น้ำร้อน 3oz.", wrong: ["น้ำร้อน 2oz."] }, { instruction: "ผงโกโก้", correct: "ผงโกโก้ 3oz.", wrong: ["ผงโกโก้ 2oz."] }, { instruction: "นม", correct: "นมLay 30ml.", wrong: ["นมสด 30ml."] }, { instruction: "ความหวานเสริม", correct: "ไซรัป 15ml.", wrong: ["ไซรัป 30ml."] }, { instruction: "ความหวานหลัก", correct: "นมข้น หวานปกติ 30ml.", wrong: ["นมข้น 15ml."] }, { instruction: "ตกแต่ง", correct: "ราดขอบแก้วซอสโกโก้ 2 รอบ", wrong: ["ไม่ต้องราด"] } ] },
-            { name: "คาราเมลมัคคิอาโต 16oz.", steps: [ { instruction: "เบสกาแฟ", correct: "กาแฟ 2oz.", wrong: ["กาแฟ 50ml."] }, { instruction: "นม", correct: "นม 100 ml.", wrong: ["นม 120 ml."] }, { instruction: "ความหวาน", correct: "ไซรัปคาราเมล 30ml.", wrong: ["ไซรัปคาราเมล 15ml."] }, { instruction: "ตกแต่ง", correct: "ราดคาราเมลขอบแก้ว 2 รอบ", wrong: ["ไม่ต้องราด"] } ] },
-            { name: "อเมริกาโน่น้ำช่อดอกมะพร้าว 16oz.", steps: [ { instruction: "เบสกาแฟ", correct: "กาแฟ 50ml.", wrong: ["กาแฟ 2oz."] }, { instruction: "ความหวาน", correct: "ช่อดอกน้ำมะพร้าว 90ml.", wrong: ["ช่อดอกน้ำมะพร้าว 120ml."] }, { instruction: "น้ำ", correct: "น้ำ 30ml.", wrong: ["ไม่ต้องเติมน้ำ"] }, { instruction: "ท็อปปิ้ง", correct: "ใส่เนื้อมะพร้าว 2 ชิ้น", wrong: ["ใส่ 1 ชิ้น"] } ] },
-            
-            { name: "อเมริกาโน่น้ำผึ้งมะนาว 16oz.", steps: [ { instruction: "ความหวาน 1", correct: "น้ำผึ้ง 15ml.", wrong: ["น้ำผึ้ง 30ml."] }, { instruction: "ความหวาน 2", correct: "ไซรัป 15ml.", wrong: ["ไซรัป 30ml."] }, { instruction: "ความเปรี้ยว", correct: "ผงมะนาว 1 ½ ช้อน", wrong: ["ผงมะนาว 1 ช้อน"] }, { instruction: "ละลาย", correct: "ใส่น้ำร้อนให้ถึง 4oz.", wrong: ["ใส่น้ำร้อน 5oz."] }, { instruction: "กาแฟ", correct: "กาแฟ 50ml. (แยกชั้น)", wrong: ["กาแฟ 2oz."] } ] },
-            { name: "อเมริกาโน่ส้ม 16oz.", steps: [ { instruction: "เบสกาแฟ", correct: "กาแฟ 50ml.", wrong: ["กาแฟ 2oz."] }, { instruction: "น้ำผลไม้", correct: "น้ำส้ม 1 ขวด (แยกชั้น)", wrong: ["น้ำส้ม 90ml."] } ] },
-            
-            { name: "ชามะนาว 16oz.", steps: [ { instruction: "สกัดแรก", correct: "ผงชาตรามือผสมมังกร 3 ช้อน สกัด 1oz.", wrong: ["ผงชาตรามือ 3 ช้อน สกัด 1oz."] }, { instruction: "จังหวะชง", correct: "พักชา 10 วินาที", wrong: ["ไม่ต้องพัก"] }, { instruction: "สกัดน้ำเพิ่ม", correct: "กดปุ่มน้ำเพิ่มอีก 4oz. รวมเป็น 5oz.", wrong: ["รวมเป็น 4oz."] }, { instruction: "ความหวาน", correct: "ไซรัป 30ml.", wrong: ["น้ำผึ้ง 30ml."] }, { instruction: "ความเปรี้ยว", correct: "ผงมะนาว 1 ½ ช้อนเล็ก", wrong: ["ผงมะนาว 1 ช้อน"] } ] },
-            
-            { name: "โกโก้มินท์ 16oz. (แยกชั้น)", steps: [ { instruction: "ละลายโกโก้", correct: "น้ำร้อน 2oz.", wrong: ["น้ำร้อน 3oz."] }, { instruction: "ปริมาณผง", correct: "ผงโกโก้ 2oz.", wrong: ["ผงโกโก้ 3oz."] }, { instruction: "นม", correct: "นมสด 100ml.", wrong: ["นมLay 120ml."] }, { instruction: "ความหวาน", correct: "ไซรัปมินท์ 30ml.", wrong: ["ไซรัปมินท์ 15ml."] }, { instruction: "ตกแต่ง", correct: "ราดขอบแก้วซอสโกโก้ 2 รอบ", wrong: ["ไม่ต้องราด"] } ] },
-            
-            { name: "ชาเขียวน้ำผึ้งมะนาว 16oz.", steps: [ { instruction: "สกัดแรก", correct: "ผงชาตรามือ 3 ช้อน สกัด 1oz.", wrong: ["ชา 2 ช้อน สกัด 1oz."] }, { instruction: "จังหวะชง", correct: "พักชา 10 วินาที", wrong: ["ไม่ต้องพัก"] }, { instruction: "สกัดน้ำเพิ่ม", correct: "กดปุ่มน้ำเพิ่มอีก 4oz. รวมเป็น 5oz.", wrong: ["รวมเป็น 4oz."] }, { instruction: "ความหวาน 1", correct: "ไซรัป 15ml.", wrong: ["ไซรัป 30ml."] }, { instruction: "ความหวาน 2", correct: "น้ำผึ้ง 15ml.", wrong: ["น้ำผึ้ง 30ml."] }, { instruction: "ความเปรี้ยว", correct: "ผงมะนาว 1 ½ ช้อนเล็ก", wrong: ["ผงมะนาว 5 ml."] } ] },
-            
-            { name: "ชากุหลาบ 16oz.", steps: [ { instruction: "สกัดแรก", correct: "ผงชากุหลาบ 3 ช้อน สกัด 1oz.", wrong: ["ชา 2 ช้อน สกัด 1oz."] }, { instruction: "จังหวะชง", correct: "พักชา 10 วินาที", wrong: ["ไม่ต้องพัก"] }, { instruction: "สกัดน้ำเพิ่ม", correct: "กดปุ่มน้ำเพิ่มอีก 3oz. รวมเป็น 4oz.", wrong: ["รวมเป็น 5oz."] }, { instruction: "ความมัน", correct: "ครีมเทียม 1 ช้อน", wrong: ["ไม่ใส่ครีมเทียม"] }, { instruction: "ความหวานหลัก", correct: "นมข้น 30ml.", wrong: ["นมข้น 15ml."] }, { instruction: "ความหวานเสริม", correct: "ไซรัป 5ml.", wrong: ["ไม่ใส่ไซรัป"] } ] },
-            
-            { name: "เมนูโซดา 16oz. (เช่น บลูฮาวาย)", steps: [ { instruction: "ไซรัป", correct: "ไซรัปผลไม้ 40ml.", wrong: ["ไซรัปผลไม้ 30ml."] }, { instruction: "โซดาแรก", correct: "ใส่โซดา 30ml. คนให้เข้ากัน", wrong: ["ใส่โซดาทีเดียวเต็ม"] }, { instruction: "ความเปรี้ยว", correct: "เฉพาะบลูฮาวายใส่ผงมะนาว 1/2 ช้อน", wrong: ["ใส่ 1 ช้อน"] }, { instruction: "น้ำแข็ง", correct: "ใส่น้ำแข็ง", wrong: ["ใส่น้ำเปล่า"] }, { instruction: "โซดาสุดท้าย", correct: "ใส่โซดาให้เต็ม", wrong: ["ใส่น้ำเปล่าให้เต็ม"] } ] },
-            
-            { name: "นมสดคาราเมล 16oz.", steps: [ { instruction: "นม", correct: "นมสด 150ml.", wrong: ["นมLay 150ml."] }, { instruction: "ความหวาน", correct: "ไซรัปคาราเมล 30ml.", wrong: ["ไซรัป 15ml."] }, { instruction: "ตกแต่ง", correct: "ราดคาราเมลขอบแก้ว 2 รอบ", wrong: ["ไม่ต้องราด"] } ] },
-            
-            { name: "เพียวมัทฉะ (เขียนมือ)", steps: [ { instruction: "มัทฉะ", correct: "ผงมัทฉะ 3 g.", wrong: ["ผงมัทฉะ 5 g."] }, { instruction: "ละลาย", correct: "น้ำร้อน 2 oz.", wrong: ["น้ำร้อน 3 oz."] }, { instruction: "น้ำ", correct: "เติมน้ำเปล่าในแก้ว 100 ml.", wrong: ["น้ำเปล่า 150 ml."] }, { instruction: "ขั้นตอนสุดท้าย", correct: "เอามัทฉะราดข้างบน", wrong: ["คนให้เข้ากัน"] } ] },
-            
-            { name: "ลิ้นจี่น้ำแดง 16oz.", steps: [ { instruction: "ลิ้นจี่", correct: "ไซรัปลิ้นจี่ 1 ขวด", wrong: ["ไซรัปลิ้นจี่ 30ml."] }, { instruction: "น้ำแดง", correct: "น้ำแดง 20 ml.", wrong: ["น้ำแดง 40 ml."] } ] },
-            { name: "ชาพีช + น้ำผึ้ง 16oz.", steps: [ { instruction: "ความหวาน", correct: "น้ำผึ้ง 30 ml.", wrong: ["น้ำผึ้ง 15 ml."] }, { instruction: "ละลาย", correct: "น้ำร้อน 3 oz.", wrong: ["น้ำร้อน 4 oz."] }, { instruction: "ชาพีช", correct: "ชาพีช 2 ช้อน", wrong: ["ชาพีช 3 ช้อน"] }, { instruction: "น้ำ", correct: "น้ำเปล่า 60 ml.", wrong: ["น้ำเปล่า 30 ml."] } ] },
-            
-            // โคลด์โฟม
-            { name: "โคลด์โฟมมัทฉะช่อน้ำดอกมะพร้าว", steps: [ { instruction: "โฟม: ส่วนของนม", correct: "นมสด 60ml.", wrong: ["นมสด 90ml."] }, { instruction: "โฟม: วิปครีม", correct: "วิป 30ml.", wrong: ["ไม่ใส่วิป"] }, { instruction: "โฟม: ส่วนของชา", correct: "ผงมัทฉะ 5-6g. (ตีจนฟองหนืด)", wrong: ["มัทฉะ 3g."] }, { instruction: "เบส", correct: "ช่อดอกน้ำมะพร้าว 90ml.", wrong: ["ช่อดอก 120ml."] }, { instruction: "น้ำ", correct: "น้ำ 30ml.", wrong: ["ไม่ต้องเติมน้ำ"] }, { instruction: "ท็อปปิ้ง", correct: "ใส่เนื้อมะพร้าว 2 ชิ้น", wrong: ["ใส่ 1 ชิ้น"] } ] },
-            { name: "โคลด์โฟม ชาเขียวช่อน้ำดอกมะพร้าว", steps: [ { instruction: "โฟม: ส่วนของนม", correct: "นมสด 60ml.", wrong: ["นมสด 90ml."] }, { instruction: "โฟม: วิปครีม", correct: "วิป 30ml.", wrong: ["ไม่ใส่วิป"] }, { instruction: "โฟม: ส่วนของชา", correct: "ชาเขียว 1oz.(30ml.)", wrong: ["ผงชาเขียว 5g."] }, { instruction: "เบส", correct: "ช่อดอกน้ำมะพร้าว 90ml.", wrong: ["ช่อดอก 120ml."] }, { instruction: "น้ำ", correct: "น้ำ 30ml.", wrong: ["ไม่ต้องเติมน้ำ"] } ] },
-            { name: "โคลด์โฟมกาแฟลาเต้ช่อน้ำดอกมะพร้าว", steps: [ { instruction: "โฟม: ส่วนของนม", correct: "นมสด 60ml.", wrong: ["นมสด 90ml."] }, { instruction: "โฟม: วิปครีม", correct: "วิป 30ml.", wrong: ["ไม่ใส่วิป"] }, { instruction: "โฟม: กาแฟ", correct: "กาแฟ 30ml. (ตีจนฟองหนืด)", wrong: ["กาแฟ 50ml."] }, { instruction: "เบส", correct: "ช่อดอกน้ำมะพร้าว 90ml.", wrong: ["ช่อดอก 120ml."] }, { instruction: "น้ำ", correct: "น้ำ 30ml.", wrong: ["ไม่ต้องเติมน้ำ"] } ] },
-            { name: "โคลด์โฟม ชาไทยช่อน้ำดอกมะพร้าว", steps: [ { instruction: "โฟม: ส่วนของนม", correct: "นมสด 60ml.", wrong: ["นมสด 90ml."] }, { instruction: "โฟม: วิปครีม", correct: "วิป 30ml.", wrong: ["ไม่ใส่วิป"] }, { instruction: "โฟม: ส่วนของชา", correct: "ชาไทย 1oz.(30ml.)", wrong: ["ผงชา 5g."] }, { instruction: "เบส", correct: "ช่อดอกน้ำมะพร้าว 90ml.", wrong: ["ช่อดอก 120ml."] }, { instruction: "น้ำ", correct: "น้ำ 30ml.", wrong: ["ไม่ต้องเติมน้ำ"] } ] },
-            { name: "โคลด์โฟม โกโก้ช่อน้ำดอกมะพร้าว", steps: [ { instruction: "โฟม: ส่วนของนม", correct: "นมสด 60ml.", wrong: ["นมสด 90ml."] }, { instruction: "โฟม: วิปครีม", correct: "วิป 30ml.", wrong: ["ไม่ใส่วิป"] }, { instruction: "โฟม: โกโก้", correct: "โกโก้ 1 ช้อน (ตีจนฟองหนืด)", wrong: ["น้ำโกโก้ 30ml."] }, { instruction: "เบส", correct: "ช่อดอกน้ำมะพร้าว 90ml.", wrong: ["ช่อดอก 120ml."] }, { instruction: "น้ำ", correct: "น้ำ 30ml.", wrong: ["ไม่ต้องเติมน้ำ"] } ] },
-            
-            // มัทฉะแบบต่างๆ
-            { name: "ชาใสกุหลาบ 16oz.", steps: [ { instruction: "สกัดแรก", correct: "ผงชากุหลาบ สกัด 1oz.", wrong: ["ผงชากุหลาบ 2 ช้อน"] }, { instruction: "จังหวะชง", correct: "พักชา 10 วินาที", wrong: ["ไม่ต้องพัก"] }, { instruction: "สกัดน้ำเพิ่ม", correct: "กดปุ่มน้ำเพิ่มอีก 4oz. รวมเป็น 5oz.", wrong: ["รวมเป็น 4oz."] }, { instruction: "ความหวาน", correct: "ไซรัป 30ml.", wrong: ["ไซรัป 15ml."] } ] },
-            { name: "เพียวมัทฉะ (สูตรพิมพ์)", steps: [ { instruction: "น้ำ", correct: "น้ำเปล่า 150ml.", wrong: ["น้ำร้อน 150ml."] }, { instruction: "มัทฉะ", correct: "มัทฉะ 1 ช้อน", wrong: ["มัทฉะ 3g."] }, { instruction: "ขั้นตอน", correct: "ตีให้เข้ากัน", wrong: ["ราดข้างบน"] } ] },
-            { name: "มัทฉะลาเต้ 16oz.", steps: [ { instruction: "มัทฉะ", correct: "ผงมัทฉะ 1 ช้อน", wrong: ["ผงมัทฉะ 3g."] }, { instruction: "ละลายชา", correct: "น้ำร้อน 2oz.", wrong: ["น้ำร้อน 3oz."] }, { instruction: "นม", correct: "นม 100ml.", wrong: ["นม 120ml."] }, { instruction: "ความหวานหลัก", correct: "นมข้น 30ml.", wrong: ["นมข้น 15ml."] }, { instruction: "ความหวานเสริม", correct: "ไซรัป 5ml.", wrong: ["ไม่ใส่ไซรัป"] } ] },
-            { name: "มัทฉะน้ำช่อดอกมะพร้าว (แยกชั้น)", steps: [ { instruction: "มัทฉะ", correct: "ผงมัทฉะ 1 ช้อน", wrong: ["ผงมัทฉะ 3g."] }, { instruction: "ละลายชา", correct: "น้ำร้อน 2oz.", wrong: ["น้ำร้อน 3oz."] }, { instruction: "เบส", correct: "ช่อดอกน้ำมะพร้าว 90ml.", wrong: ["ช่อดอก 120ml."] }, { instruction: "น้ำ", correct: "น้ำ 30ml.", wrong: ["ไม่ต้องเติมน้ำ"] }, { instruction: "ท็อปปิ้ง", correct: "ใส่เนื้อมะพร้าว 2 ชิ้น", wrong: ["ใส่ 1 ชิ้น"] } ] },
-            { name: "มัทฉะน้ำส้ม (แยกชั้น)", steps: [ { instruction: "มัทฉะ", correct: "ผงมัทฉะ 1 ช้อน", wrong: ["ผงมัทฉะ 3g."] }, { instruction: "ละลายชา", correct: "น้ำร้อน 2oz.", wrong: ["น้ำร้อน 3oz."] }, { instruction: "น้ำผลไม้", correct: "น้ำส้ม 1 ขวด 120ml.", wrong: ["น้ำส้ม 90ml."] } ] },
-            { name: "มัทฉะมะนาว (แยกชั้น)", steps: [ { instruction: "มัทฉะ", correct: "ผงมัทฉะ 1 ช้อน", wrong: ["ผงมัทฉะ 3g."] }, { instruction: "ละลายชา", correct: "น้ำร้อน 2oz.", wrong: ["น้ำร้อน 3oz."] }, { instruction: "ความหวาน", correct: "ไซรัป 30 ml.", wrong: ["ไซรัป 15ml."] }, { instruction: "ความเปรี้ยว", correct: "ผงมะนาว 1 ½ ช้อน", wrong: ["ผงมะนาว 1 ช้อน"] }, { instruction: "ละลายน้ำ", correct: "ใส่น้ำร้อนให้ถึง 4oz.", wrong: ["ใส่น้ำร้อน 5oz."] } ] },
-            { name: "มัทฉะน้ำผึ้งมะนาว (แยกชั้น)", steps: [ { instruction: "มัทฉะ", correct: "ผงมัทฉะ 1 ช้อน", wrong: ["ผงมัทฉะ 3g."] }, { instruction: "ละลายชา", correct: "น้ำร้อน 2oz.", wrong: ["น้ำร้อน 3oz."] }, { instruction: "ความหวาน 1", correct: "น้ำผึ้ง 15ml.", wrong: ["น้ำผึ้ง 30ml."] }, { instruction: "ความหวาน 2", correct: "ไซรัป 15ml.", wrong: ["ไซรัป 30ml."] }, { instruction: "ความเปรี้ยว", correct: "ผงมะนาว 1 ½ ช้อน", wrong: ["ผงมะนาว 1 ช้อน"] }, { instruction: "ละลายน้ำ", correct: "ใส่น้ำร้อนให้ถึง 4oz.", wrong: ["ใส่น้ำร้อน 5oz."] } ] }
-        ];
-
-        let playList = [];
-        let currentMenuIndex = 0;
-        let currentStepIndex = 0;
-        let score = 0;
-        let totalSteps = 0;
-        let totalStepsCompleted = 0;
-        let gameMode = 'choice'; 
-        
-        let timerInterval;
-        let streak = 0;
-        let timeElapsedSeconds = 0;
-
-        function getIngredientVisuals(text) {
-            if (text.includes('พักชา') || text.includes('วินาที')) return { color: 'rgba(200, 200, 200, 0.4)', icon: '⏱️' };
-            if (text.includes('กาแฟ') || text.includes('คั่ว')) return { color: 'rgba(92, 58, 33, 0.9)', icon: '☕' };
-            if (text.includes('ชาเขียว') || text.includes('มัทฉะ') || text.includes('ผงตรามือ')) return { color: 'rgba(77, 138, 74, 0.9)', icon: '🍵' };
-            if (text.includes('ชาไทย') || text.includes('ผงชาตรามือ') || text.includes('ผงชา') || text.includes('ชากุหลาบ') || text.includes('ชา')) return { color: 'rgba(217, 119, 54, 0.9)', icon: '🧋' };
-            if (text.includes('นมชมพู') || text.includes('น้ำแดง') || text.includes('ลิ้นจี่')) return { color: 'rgba(255, 143, 179, 0.9)', icon: '🍓' };
-            if (text.includes('โกโก้')) return { color: 'rgba(74, 44, 17, 0.9)', icon: '🍫' };
-            if (text.includes('ชาพีช') || text.includes('พีช') || text.includes('น้ำส้ม')) return { color: 'rgba(252, 165, 93, 0.9)', icon: '🍑' };
-            if (text.includes('มะนาว') || text.includes('เลม่อน')) return { color: 'rgba(185, 247, 62, 0.8)', icon: '🍋' };
-            if (text.includes('น้ำผึ้ง')) return { color: 'rgba(250, 214, 77, 0.9)', icon: '🍯' };
-            if (text.includes('นม') || text.includes('วิป') || text.includes('ครีมเทียม')) return { color: 'rgba(255, 255, 255, 0.9)', icon: '🥛' };
-            if (text.includes('น้ำ') || text.includes('โซดา')) return { color: 'rgba(173, 216, 230, 0.6)', icon: '💧' };
-            if (text.includes('ไซรัป') || text.includes('คาราเมล')) return { color: 'rgba(230, 180, 230, 0.8)', icon: '🍯' };
-            return { color: 'rgba(200, 200, 200, 0.6)', icon: '✨' };
-        }
-
-        function showCustomConfirm(message, onConfirm) {
-            const modal = document.getElementById('custom-confirm-modal');
-            const msgObj = document.getElementById('custom-confirm-message');
-            const btnOk = document.getElementById('custom-confirm-ok');
-            const btnCancel = document.getElementById('custom-confirm-cancel');
-            
-            msgObj.textContent = message;
-            modal.classList.remove('hidden');
-            
-            btnOk.onclick = () => {
-                modal.classList.add('hidden');
-                if (onConfirm) onConfirm();
-            };
-            
-            btnCancel.onclick = () => {
-                modal.classList.add('hidden');
-            };
-        }
-
-        function goToHome() {
-            if (!document.getElementById('game-screen').classList.contains('hidden')) {
-                showCustomConfirm("คุณต้องการยกเลิกการฝึกและกลับหน้าแรกหรือไม่?", () => {
-                    clearInterval(timerInterval);
-                    initGame();
-                });
-            } else {
-                clearInterval(timerInterval);
-                initGame();
-            }
-        }
-
-        function initGame() {
-            document.getElementById('start-screen').classList.remove('hidden');
-            document.getElementById('game-screen').classList.add('hidden');
-            document.getElementById('game-screen').classList.remove('flex');
-            document.getElementById('result-screen').classList.add('hidden');
-            document.getElementById('progress-container').classList.add('hidden');
-            document.getElementById('game-stats').classList.add('hidden');
-            
-            // Check best stats on re-init
-            checkBestStats();
-        }
-
-        function startGame(mode) {
-            gameMode = mode;
-            // Play 5 random menus
-            playList = [...menuDatabase].sort(() => 0.5 - Math.random()).slice(0, 5); 
-            currentMenuIndex = 0;
-            currentStepIndex = 0;
-            score = 0;
-            totalStepsCompleted = 0;
-            streak = 0;
-            timeElapsedSeconds = 0;
-            totalSteps = playList.reduce((acc, menu) => acc + menu.steps.length, 0);
-            
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('game-screen').classList.remove('hidden');
-            document.getElementById('game-screen').classList.add('flex');
-            document.getElementById('progress-container').classList.remove('hidden');
-            document.getElementById('game-stats').classList.remove('hidden');
-            document.getElementById('progress-bar').style.width = '0%';
-            
-            document.getElementById('total-score').textContent = totalSteps;
-            document.getElementById('current-score').textContent = score;
-            updateStreak();
-            
-            startTimer();
-            renderMenu();
-        }
-
-        function renderMenu() {
-            if (currentMenuIndex >= playList.length) {
-                endGame();
-                return;
-            }
-            
-            const menu = playList[currentMenuIndex];
-            document.getElementById('menu-counter').textContent = currentMenuIndex + 1;
-            document.getElementById('current-menu-name').textContent = menu.name;
-            
-            if (currentStepIndex === 0) {
-                document.getElementById('glass-container').innerHTML = `
-                    <div id="empty-glass-text" class="absolute inset-0 flex items-center justify-center text-gray-400 text-xs font-medium tracking-wide z-10">รอรับออเดอร์...</div>
-                `;
-            }
-            
-            renderStep();
-        }
-
-        function renderStep() {
-            const menu = playList[currentMenuIndex];
-            const step = menu.steps[currentStepIndex];
-            
-            document.getElementById('step-instruction').textContent = `ขั้นตอนที่ ${currentStepIndex + 1}: ${step.instruction}`;
-            
-            const optionsContainer = document.getElementById('options-container');
-            const typingContainer = document.getElementById('typing-container');
-            const emptyText = document.getElementById('empty-glass-text');
-            if (emptyText) emptyText.style.display = 'none';
-            
-            if (gameMode === 'choice') {
-                optionsContainer.classList.remove('hidden');
-                typingContainer.classList.add('hidden');
-                
-                optionsContainer.innerHTML = '';
-                let options = [step.correct, ...step.wrong];
-                
-                // เพิ่มตัวหลอก (Distractors) ให้มี 4 ตัวเลือก
-                let allOptions = [];
-                menuDatabase.forEach(m => m.steps.forEach(s => {
-                    allOptions.push(s.correct);
-                    allOptions.push(...s.wrong);
-                }));
-                // เอาตัวเลือกที่ซ้ำและตัวที่มีอยู่แล้วออก
-                allOptions = [...new Set(allOptions)].filter(opt => !options.includes(opt));
-                // สุ่มลำดับตัวเลือกหลอกทั้งหมด
-                allOptions.sort(() => 0.5 - Math.random());
-                
-                // ดึงมาเติมให้ได้ 4 ตัวเลือก (หรือ 5 เพื่อความท้าทาย แต่ปกติ 4 กำลังดี)
-                while (options.length < 4 && allOptions.length > 0) {
-                    options.push(allOptions.pop());
-                }
-
-                const shuffledOptions = options.sort(() => 0.5 - Math.random());
-                
-                shuffledOptions.forEach(opt => {
-                    const btn = document.createElement('button');
-                    btn.className = 'w-full text-left bg-white border border-gray-200 hover:border-brand-400 hover:bg-brand-50 p-4 rounded-xl transition-all shadow-sm font-medium text-sm flex items-center group';
-                    btn.innerHTML = `<span class="w-6 h-6 rounded-full border-2 border-gray-300 mr-3 flex items-center justify-center group-hover:border-brand-500 group-hover:bg-brand-100 transition-colors"></span> ${opt}`;
-                    btn.onclick = () => checkAnswer(opt);
-                    optionsContainer.appendChild(btn);
-                });
-            } else {
-                optionsContainer.classList.add('hidden');
-                typingContainer.classList.remove('hidden');
-                
-                const input = document.getElementById('typing-input');
-                input.value = '';
-                input.focus();
-                
-                document.getElementById('typing-feedback').classList.add('hidden');
-                document.getElementById('show-hint-btn').classList.remove('hidden');
-                
-                input.onkeypress = (e) => {
-                    if (e.key === 'Enter') submitTyping();
-                };
-            }
-        }
-
-        function checkAnswer(selectedOption) {
-            const menu = playList[currentMenuIndex];
-            const step = menu.steps[currentStepIndex];
-            
-            if (selectedOption === step.correct) {
-                score++;
-                streak++;
-                document.getElementById('current-score').textContent = score;
-                updateStreak();
-                
-                addLiquidToGlass(step.correct);
-                nextStep();
-            } else {
-                streak = 0;
-                updateStreak();
-                
-                document.body.classList.add('animate-shake');
-                setTimeout(() => document.body.classList.remove('animate-shake'), 400);
-                
-                if (gameMode === 'choice') {
-                    showCustomAlert(step.correct, () => {
-                        nextStep();
-                    });
-                } else {
-                    const feedback = document.getElementById('typing-feedback');
-                    feedback.textContent = 'ยังไม่ถูกต้อง ลองอีกครั้ง!';
-                    feedback.className = 'text-sm text-center text-red-500 font-bold block';
-                }
-            }
-        }
-
-        function submitTyping() {
-            const input = document.getElementById('typing-input').value.trim();
-            if (!input) return;
-            const menu = playList[currentMenuIndex];
-            const step = menu.steps[currentStepIndex];
-            
-            let nInput = input.toLowerCase().replace(/1\s*[½]|1\s*1\/2/g, '1.5').replace(/[½]|1\/2/g, '0.5');
-            let nCorrect = step.correct.toLowerCase().replace(/1\s*[½]|1\s*1\/2/g, '1.5').replace(/[½]|1\/2/g, '0.5');
-            
-            let exactMatch = nInput.replace(/\s+/g, '') === nCorrect.replace(/\s+/g, '');
-            let isSmartMatch = true;
-            
-            let inputNums = nInput.match(/\d+(\.\d+)?/g) || [];
-            let correctNums = nCorrect.match(/\d+(\.\d+)?/g) || [];
-            
-            if (inputNums.length > 0) {
-                let numsOk = inputNums.every(num => correctNums.includes(num));
-                if (!numsOk) isSmartMatch = false;
-            } else {
-                if (correctNums.length > 0) isSmartMatch = false;
-            }
-            
-            if (isSmartMatch) {
-                const stripRegex = /\d+(\.\d+)?|ml\.?|oz\.?|g\.?|ช้อน(เล็ก)?|วินาที|%/g;
-                let textInput = nInput.replace(stripRegex, ' ').trim();
-                let textCorrect = nCorrect.replace(stripRegex, '').replace(/\s+/g, '');
-                
-                if (textInput.length > 0) {
-                    let words = textInput.split(/\s+/).filter(w => w.length > 0);
-                    for (let word of words) {
-                        let i = 0, j = 0;
-                        while (i < word.length && j < textCorrect.length) {
-                            if (word[i] === textCorrect[j]) i++;
-                            j++;
-                        }
-                        if (i !== word.length) {
-                            isSmartMatch = false;
-                            break;
-                        }
-                    }
-                }
-            }
-            
-            if (exactMatch || isSmartMatch) {
-                 checkAnswer(step.correct);
-            } else {
-                 checkAnswer(input);
-            }
-        }
-
-        function showCustomAlert(correctAnswer, callback) {
-            const modal = document.getElementById('custom-alert-modal');
-            const msgObj = document.getElementById('custom-alert-message');
-            const btn = document.getElementById('custom-alert-btn');
-            
-            msgObj.innerHTML = `ที่ถูกต้องคือ:<br><span class="font-bold text-lg text-brand-900 mt-1 block">${correctAnswer}</span>`;
-            modal.classList.remove('hidden');
-            
-            btn.onclick = () => {
-                modal.classList.add('hidden');
-                if (callback) callback();
-            };
-        }
-
-        function showTypingHint() {
-            const menu = playList[currentMenuIndex];
-            const step = menu.steps[currentStepIndex];
-            document.getElementById('typing-input').value = step.correct;
-            streak = 0;
-            updateStreak();
-        }
-
-        function updateStreak() {
-            const badge = document.getElementById('streak-badge');
-            const count = document.getElementById('streak-count');
-            if (streak >= 2) {
-                badge.classList.remove('hidden');
-                count.textContent = streak;
-            } else {
-                badge.classList.add('hidden');
-            }
-        }
-
-        function addLiquidToGlass(ingredientText) {
-            const visual = getIngredientVisuals(ingredientText);
-            const glass = document.getElementById('glass-container');
-            
-            const layer = document.createElement('div');
-            const menu = playList[currentMenuIndex];
-            const stepRatio = 100 / menu.steps.length;
-            
-            layer.className = 'w-full animate-liquidFill relative flex items-center justify-center';
-            layer.style.height = `${stepRatio}%`;
-            layer.style.backgroundColor = visual.color;
-            layer.style.borderTop = '1px solid rgba(255,255,255,0.2)';
-            layer.style.zIndex = menu.steps.length - currentStepIndex;
-            
-            const icon = document.createElement('div');
-            icon.className = 'absolute text-xl opacity-50';
-            icon.textContent = visual.icon;
-            layer.appendChild(icon);
-            
-            glass.appendChild(layer);
-        }
-
-        function nextStep() {
-            totalStepsCompleted++;
-            const progress = (totalStepsCompleted / totalSteps) * 100;
-            document.getElementById('progress-bar').style.width = `${progress}%`;
-            
-            currentStepIndex++;
-            const menu = playList[currentMenuIndex];
-            
-            if (currentStepIndex >= menu.steps.length) {
-                currentMenuIndex++;
-                currentStepIndex = 0;
-                
-                if (currentMenuIndex < playList.length) {
-                    setTimeout(() => renderMenu(), 800);
-                } else {
-                    setTimeout(() => endGame(), 800);
-                }
-            } else {
-                renderStep();
-            }
-        }
-
-        function startTimer() {
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                timeElapsedSeconds++;
-                const mins = Math.floor(timeElapsedSeconds / 60).toString().padStart(2, '0');
-                const secs = (timeElapsedSeconds % 60).toString().padStart(2, '0');
-                document.getElementById('timer-display').textContent = `${mins}:${secs}`;
-            }, 1000);
-        }
-
-        function endGame() {
-            clearInterval(timerInterval);
-            
-            document.getElementById('game-screen').classList.add('hidden');
-            document.getElementById('game-screen').classList.remove('flex');
-            document.getElementById('result-screen').classList.remove('hidden');
-            document.getElementById('progress-container').classList.add('hidden');
-            document.getElementById('game-stats').classList.add('hidden');
-            
-            document.getElementById('final-score').textContent = score;
-            document.getElementById('final-total').textContent = totalSteps;
-            
-            const mins = Math.floor(timeElapsedSeconds / 60).toString().padStart(2, '0');
-            const secs = (timeElapsedSeconds % 60).toString().padStart(2, '0');
-            document.getElementById('final-time').textContent = `${mins}:${secs}`;
-            
-            let message = "";
-            const percentage = score / totalSteps;
-            if (percentage === 1) message = "เพอร์เฟค! คุณคือบาริสต้ามือทอง 🌟";
-            else if (percentage >= 0.8) message = "ยอดเยี่ยม! ชงเก่งมากเลย 👍";
-            else if (percentage >= 0.5) message = "เกือบดีแล้ว! ฝึกอีกนิดนะ 💪";
-            else message = "สู้ๆ นะ! ต้องจำสูตรให้แม่นกว่านี้ 📚";
-            
-            document.getElementById('result-message').textContent = message;
-            
-            const currentBestScore = localStorage.getItem('baristaBestScore') || 0;
-            const currentBestTime = localStorage.getItem('baristaBestTime') || 999999;
-            
-            if (score > currentBestScore || (score == currentBestScore && timeElapsedSeconds < currentBestTime)) {
-                localStorage.setItem('baristaBestScore', score);
-                localStorage.setItem('baristaBestTime', timeElapsedSeconds);
-            }
-        }
-
-        function openHelperMode() {
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('helper-screen').classList.remove('hidden');
-            document.getElementById('helper-screen').classList.add('flex');
-            
-            document.getElementById('recipe-search-input').value = '';
-            searchRecipe();
-            setTimeout(() => document.getElementById('recipe-search-input').focus(), 100);
-        }
-
-        function closeHelperMode() {
-            document.getElementById('helper-screen').classList.add('hidden');
-            document.getElementById('helper-screen').classList.remove('flex');
-            document.getElementById('start-screen').classList.remove('hidden');
-        }
-
-        function searchRecipe() {
-            const query = document.getElementById('recipe-search-input').value.toLowerCase();
-            const resultsContainer = document.getElementById('recipe-search-results');
-            resultsContainer.innerHTML = '';
-            
-            const filteredMenus = menuDatabase.filter(menu => menu.name.toLowerCase().includes(query));
-            
-            const groupedMenus = {};
-            filteredMenus.forEach(menu => {
-                const baseMenuName = menu.name.split(' 16oz.')[0].split(' (')[0].trim();
-                if (!groupedMenus[baseMenuName]) {
-                    groupedMenus[baseMenuName] = [];
-                }
-                groupedMenus[baseMenuName].push(menu);
-            });
-            
-            const totalGroups = Object.keys(groupedMenus).length;
-            
-            document.getElementById('total-recipes-badge').textContent = query ? 
-                `พบ ${totalGroups} เมนูหลัก` : 
-                `มี ${totalGroups} เมนูหลัก`;
-            
-            if (totalGroups === 0) {
-                resultsContainer.innerHTML = '<div class="text-center text-gray-400 py-8">ไม่พบสูตรที่ค้นหา</div>';
-                return;
-            }
-            
-            Object.entries(groupedMenus).forEach(([baseMenuName, menus]) => {
-                const card = document.createElement('div');
-                card.className = 'bg-brand-50 rounded-xl p-4 border border-brand-100 flex gap-4';
-                
-                const imgContainer = document.createElement('div');
-                imgContainer.className = 'w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-white shadow-sm border border-brand-100 flex items-center justify-center';
-                imgContainer.innerHTML = `<img src="img/menus/${baseMenuName}.jpg" alt="${baseMenuName}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-solid fa-mug-hot text-brand-300 text-3xl\\'></i>';">`;
-                
-                const contentContainer = document.createElement('div');
-                contentContainer.className = 'flex-grow overflow-hidden';
-                
-                const title = document.createElement('h3');
-                title.className = 'font-bold text-brand-900 mb-3 border-b border-brand-200 pb-2 text-lg';
-                title.innerHTML = `${baseMenuName}`;
-                contentContainer.appendChild(title);
-                
-                menus.forEach((menu, index) => {
-                    const variantContainer = document.createElement('div');
-                    variantContainer.className = index > 0 ? 'mt-4 pt-3 border-t border-brand-100 border-dashed' : '';
-                    
-                    let variantName = menu.name.replace(baseMenuName, '').trim();
-                    if(variantName.startsWith('16oz.')) variantName = variantName.replace('16oz.', '').trim();
-                    if(variantName.startsWith('16oz')) variantName = variantName.replace('16oz', '').trim();
-                    if(!variantName) variantName = '(สูตรมาตรฐาน)';
-                    
-                    const variantTitle = document.createElement('h4');
-                    variantTitle.className = 'text-xs font-bold text-brand-600 mb-2';
-                    variantTitle.innerHTML = `<i class="fa-solid fa-star text-[10px] mr-1"></i> ${variantName}`;
-                    variantContainer.appendChild(variantTitle);
-                    
-                    const stepsList = document.createElement('ul');
-                    stepsList.className = 'space-y-1 text-sm';
-                    
-                    menu.steps.forEach((step, stepIndex) => {
-                        const li = document.createElement('li');
-                        li.className = 'flex items-start';
-                        li.innerHTML = `<span class="inline-block bg-brand-200 text-brand-800 text-[10px] font-bold px-2 py-0.5 rounded-full mr-2 mt-0.5">${stepIndex + 1}</span>
-                                        <div><span class="text-gray-500 text-[11px] block">${step.instruction}</span><span class="font-medium text-gray-800 text-xs">${step.correct}</span></div>`;
-                        stepsList.appendChild(li);
-                    });
-                    
-                    variantContainer.appendChild(stepsList);
-                    contentContainer.appendChild(variantContainer);
-                });
-                
-                card.appendChild(imgContainer);
-                card.appendChild(contentContainer);
-                resultsContainer.appendChild(card);
-            });
-        }
-
-        function checkBestStats() {
-            const bestScore = localStorage.getItem('baristaBestScore');
-            const bestTime = localStorage.getItem('baristaBestTime');
-            if (bestScore) {
-                document.getElementById('best-stats-container').classList.remove('hidden');
-                document.getElementById('best-score').textContent = `${bestScore} pt`;
-                
-                const mins = Math.floor(bestTime / 60).toString().padStart(2, '0');
-                const secs = (bestTime % 60).toString().padStart(2, '0');
-                document.getElementById('best-time').textContent = `${mins}:${secs}`;
-            }
-        }
-
-        window.onload = checkBestStats;
-
-        // PWA Service Worker Registration
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker registered!'))
-                    .catch(err => console.log('Service Worker registration failed: ', err));
-            });
-        }
-    </script>
+    <script src="js/database.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
