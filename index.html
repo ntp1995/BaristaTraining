@@ -778,36 +778,73 @@
             
             const filteredMenus = menuDatabase.filter(menu => menu.name.toLowerCase().includes(query));
             
-            document.getElementById('total-recipes-badge').textContent = query ? 
-                `พบ ${filteredMenus.length}/${menuDatabase.length} สูตร` : 
-                `มี ${menuDatabase.length} สูตร`;
+            const groupedMenus = {};
+            filteredMenus.forEach(menu => {
+                const baseMenuName = menu.name.split(' 16oz.')[0].split(' (')[0].trim();
+                if (!groupedMenus[baseMenuName]) {
+                    groupedMenus[baseMenuName] = [];
+                }
+                groupedMenus[baseMenuName].push(menu);
+            });
             
-            if (filteredMenus.length === 0) {
+            const totalGroups = Object.keys(groupedMenus).length;
+            
+            document.getElementById('total-recipes-badge').textContent = query ? 
+                `พบ ${totalGroups} เมนูหลัก` : 
+                `มี ${totalGroups} เมนูหลัก`;
+            
+            if (totalGroups === 0) {
                 resultsContainer.innerHTML = '<div class="text-center text-gray-400 py-8">ไม่พบสูตรที่ค้นหา</div>';
                 return;
             }
             
-            filteredMenus.forEach(menu => {
+            Object.entries(groupedMenus).forEach(([baseMenuName, menus]) => {
                 const card = document.createElement('div');
-                card.className = 'bg-brand-50 rounded-xl p-4 border border-brand-100';
+                card.className = 'bg-brand-50 rounded-xl p-4 border border-brand-100 flex gap-4';
+                
+                const imgContainer = document.createElement('div');
+                imgContainer.className = 'w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-white shadow-sm border border-brand-100 flex items-center justify-center';
+                imgContainer.innerHTML = `<img src="img/menus/${baseMenuName}.jpg" alt="${baseMenuName}" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-solid fa-mug-hot text-brand-300 text-3xl\\'></i>';">`;
+                
+                const contentContainer = document.createElement('div');
+                contentContainer.className = 'flex-grow overflow-hidden';
                 
                 const title = document.createElement('h3');
-                title.className = 'font-bold text-brand-900 mb-2 border-b border-brand-200 pb-2';
-                title.innerHTML = `<i class="fa-solid fa-mug-hot text-brand-500 mr-2"></i> ${menu.name}`;
-                card.appendChild(title);
+                title.className = 'font-bold text-brand-900 mb-3 border-b border-brand-200 pb-2 text-lg';
+                title.innerHTML = `${baseMenuName}`;
+                contentContainer.appendChild(title);
                 
-                const stepsList = document.createElement('ul');
-                stepsList.className = 'space-y-1 mt-2 text-sm';
-                
-                menu.steps.forEach((step, index) => {
-                    const li = document.createElement('li');
-                    li.className = 'flex items-start';
-                    li.innerHTML = `<span class="inline-block bg-brand-200 text-brand-800 text-[10px] font-bold px-2 py-0.5 rounded-full mr-2 mt-0.5">${index + 1}</span>
-                                    <div><span class="text-gray-500 text-xs block">${step.instruction}</span><span class="font-medium text-gray-800">${step.correct}</span></div>`;
-                    stepsList.appendChild(li);
+                menus.forEach((menu, index) => {
+                    const variantContainer = document.createElement('div');
+                    variantContainer.className = index > 0 ? 'mt-4 pt-3 border-t border-brand-100 border-dashed' : '';
+                    
+                    let variantName = menu.name.replace(baseMenuName, '').trim();
+                    if(variantName.startsWith('16oz.')) variantName = variantName.replace('16oz.', '').trim();
+                    if(variantName.startsWith('16oz')) variantName = variantName.replace('16oz', '').trim();
+                    if(!variantName) variantName = '(สูตรมาตรฐาน)';
+                    
+                    const variantTitle = document.createElement('h4');
+                    variantTitle.className = 'text-xs font-bold text-brand-600 mb-2';
+                    variantTitle.innerHTML = `<i class="fa-solid fa-star text-[10px] mr-1"></i> ${variantName}`;
+                    variantContainer.appendChild(variantTitle);
+                    
+                    const stepsList = document.createElement('ul');
+                    stepsList.className = 'space-y-1 text-sm';
+                    
+                    menu.steps.forEach((step, stepIndex) => {
+                        const li = document.createElement('li');
+                        li.className = 'flex items-start';
+                        li.innerHTML = `<span class="inline-block bg-brand-200 text-brand-800 text-[10px] font-bold px-2 py-0.5 rounded-full mr-2 mt-0.5">${stepIndex + 1}</span>
+                                        <div><span class="text-gray-500 text-[11px] block">${step.instruction}</span><span class="font-medium text-gray-800 text-xs">${step.correct}</span></div>`;
+                        stepsList.appendChild(li);
+                    });
+                    
+                    variantContainer.appendChild(stepsList);
+                    contentContainer.appendChild(variantContainer);
                 });
                 
-                card.appendChild(stepsList);
+                card.appendChild(imgContainer);
+                card.appendChild(contentContainer);
                 resultsContainer.appendChild(card);
             });
         }
