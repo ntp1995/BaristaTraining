@@ -43,6 +43,10 @@ tailwind.config = {
                 slideInLeft: {
                     '0%': { transform: 'translateX(-150%)', opacity: '0' },
                     '100%': { transform: 'translateX(0)', opacity: '1' },
+                },
+                slideDownDiscard: {
+                    '0%': { transform: 'translateY(0)', opacity: '1' },
+                    '100%': { transform: 'translateY(150%) scale(0.8)', opacity: '0' },
                 }
             },
             animation: {
@@ -54,6 +58,7 @@ tailwind.config = {
                 float: 'float 3s ease-in-out infinite',
                 slideOutRight: 'slideOutRight 0.6s ease-in forwards',
                 slideInLeft: 'slideInLeft 0.6s ease-out forwards',
+                slideDownDiscard: 'slideDownDiscard 0.6s ease-in forwards',
             }
         }
     }

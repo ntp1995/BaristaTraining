@@ -48,5 +48,12 @@ const AudioSystem = {
         // A happy, crisp "ding-dong" or slide sound to indicate serving
         this.playTone(880, 'sine', 0.1, 0.1); // A5
         setTimeout(() => this.playTone(1046, 'sine', 0.2, 0.1), 100); // C6
+    },
+    
+    playDiscard: function() {
+        // A descending sad sound or clank
+        this.playTone(300, 'triangle', 0.15, 0.1);
+        setTimeout(() => this.playTone(250, 'triangle', 0.15, 0.1), 150);
+        setTimeout(() => this.playTone(200, 'sawtooth', 0.3, 0.15), 300);
     }
 };

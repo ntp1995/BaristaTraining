@@ -15,6 +15,8 @@
         let stepTimer;
         let stepTimeLeft = 10;
         let weaknessData = JSON.parse(localStorage.getItem('baristaWeakness')) || {};
+        let isCurrentCupFlawed = false;
+        let perfectCupsServed = 0;
 
         function getIngredientVisuals(text) {
             if (text.includes('พักชา') || text.includes('วินาที')) return { color: 'rgba(200, 200, 200, 0.4)', icon: '⏱️' };
@@ -98,6 +100,7 @@
             currentStepIndex = 0;
             score = 0;
             totalStepsCompleted = 0;
+            perfectCupsServed = 0;
             streak = 0;
             timeElapsedSeconds = 0;
             totalSteps = playList.reduce((acc, menu) => acc + menu.steps.length, 0);
@@ -123,6 +126,7 @@
                 return;
             }
             
+            isCurrentCupFlawed = false;
             const menu = playList[currentMenuIndex];
             document.getElementById('menu-counter').textContent = currentMenuIndex + 1;
             document.getElementById('current-menu-name').textContent = menu.name;
@@ -131,6 +135,8 @@
                 document.getElementById('glass-container').innerHTML = `
                     <div id="empty-glass-text" class="absolute inset-0 flex items-center justify-center text-gray-400 text-xs font-medium tracking-wide z-10">รอรับออเดอร์...</div>
                 `;
+                const ingredientLog = document.getElementById('ingredient-log');
+                if (ingredientLog) ingredientLog.innerHTML = '';
             }
             
             renderStep();
@@ -154,14 +160,29 @@
                 optionsContainer.innerHTML = '';
                 let options = [step.correct, ...step.wrong];
                 
-                // เพิ่มตัวหลอก (Distractors) ให้มี 4 ตัวเลือก
+                // Smart Distractors: เลือกเฉพาะชอยส์ที่ instruction คล้ายกัน หรือ instruction เหมือนกัน
                 let allOptions = [];
                 menuDatabase.forEach(m => m.steps.forEach(s => {
-                    allOptions.push(s.correct);
-                    allOptions.push(...s.wrong);
+                    if (s.instruction === step.instruction || 
+                       (s.instruction.includes('หวาน') && step.instruction.includes('หวาน')) || 
+                       (s.instruction.includes('นม') && step.instruction.includes('นม')) ||
+                       (s.instruction.includes('สกัด') && step.instruction.includes('สกัด'))) {
+                        allOptions.push(s.correct);
+                        allOptions.push(...s.wrong);
+                    }
                 }));
                 // เอาตัวเลือกที่ซ้ำและตัวที่มีอยู่แล้วออก
                 allOptions = [...new Set(allOptions)].filter(opt => !options.includes(opt));
+                
+                // Fallback ถ้าน้อยเกินไป
+                if (allOptions.length < 3) {
+                    menuDatabase.forEach(m => m.steps.forEach(s => {
+                        allOptions.push(s.correct);
+                        allOptions.push(...s.wrong);
+                    }));
+                    allOptions = [...new Set(allOptions)].filter(opt => !options.includes(opt));
+                }
+                
                 // สุ่มลำดับตัวเลือกหลอกทั้งหมด
                 allOptions.sort(() => 0.5 - Math.random());
                 
@@ -227,6 +248,7 @@
                 addLiquidToGlass(step.correct);
                 nextStep();
             } else {
+                isCurrentCupFlawed = true;
                 if (window.AudioSystem) window.AudioSystem.playWrong();
                 if ('vibrate' in navigator) navigator.vibrate([200]); // Haptic feedback
                 
@@ -243,6 +265,7 @@
                 
                 if (gameMode === 'choice') {
                     showCustomAlert(step.correct, () => {
+                        addLiquidToGlass(step.correct);
                         nextStep();
                     });
                 } else {
@@ -367,6 +390,15 @@
             layer.appendChild(icon);
             
             glass.appendChild(layer);
+            
+            const ingredientLog = document.getElementById('ingredient-log');
+            if (ingredientLog) {
+                const li = document.createElement('li');
+                li.className = 'bg-white px-2 py-1.5 rounded-md border-l-2 border-brand-400 truncate shadow-sm leading-tight flex items-center';
+                li.innerHTML = `<span class="mr-1.5 text-sm">${visual.icon}</span> <span title="${ingredientText}">${ingredientText}</span>`;
+                // append so latest is at the top visually in flex-col-reverse
+                ingredientLog.appendChild(li);
+            }
         }
 
         function nextStep() {
@@ -378,23 +410,33 @@
             const menu = playList[currentMenuIndex];
             
             if (currentStepIndex >= menu.steps.length) {
-                // Menu Finished! Serve Animation.
-                if (window.AudioSystem) window.AudioSystem.playServe();
+                // Menu Finished! Serve or Discard Animation.
+                const glassWrapper = document.getElementById('glass-container').parentElement;
                 
-                document.getElementById('step-instruction').innerHTML = `<span class="text-green-600 font-bold text-lg"><i class="fa-solid fa-bell-concierge"></i> ออเดอร์เสร็จสิ้น! เสิร์ฟได้</span>`;
+                if (!isCurrentCupFlawed) {
+                    if (window.AudioSystem) window.AudioSystem.playServe();
+                    document.getElementById('step-instruction').innerHTML = `<span class="text-green-600 font-bold text-lg"><i class="fa-solid fa-bell-concierge"></i> ออเดอร์เสร็จสิ้น! เสิร์ฟได้</span>`;
+                    perfectCupsServed++;
+                    glassWrapper.classList.add('animate-slideOutRight');
+                } else {
+                    if (window.AudioSystem) window.AudioSystem.playDiscard();
+                    document.getElementById('step-instruction').innerHTML = `<span class="text-red-600 font-bold text-lg"><i class="fa-solid fa-trash"></i> แก้วนี้ชงผิดสูตร! ต้องเททิ้ง</span>`;
+                    glassWrapper.classList.add('animate-slideDownDiscard');
+                }
                 
                 // Hide options
                 document.getElementById('options-container').classList.add('hidden');
                 document.getElementById('typing-container').classList.add('hidden');
                 
-                const glassWrapper = document.getElementById('glass-container').parentElement;
-                glassWrapper.classList.add('animate-slideOutRight');
-                
                 setTimeout(() => {
                     currentMenuIndex++;
                     currentStepIndex = 0;
                     
-                    glassWrapper.classList.remove('animate-slideOutRight');
+                    if (!isCurrentCupFlawed) {
+                        glassWrapper.classList.remove('animate-slideOutRight');
+                    } else {
+                        glassWrapper.classList.remove('animate-slideDownDiscard');
+                    }
                     glassWrapper.classList.add('animate-slideInLeft');
                     
                     setTimeout(() => {
@@ -434,6 +476,9 @@
             
             document.getElementById('final-score').textContent = score;
             document.getElementById('final-total').textContent = totalSteps;
+            
+            document.getElementById('final-perfect-cups').textContent = perfectCupsServed;
+            document.getElementById('final-total-cups').textContent = playList.length;
             
             const mins = Math.floor(timeElapsedSeconds / 60).toString().padStart(2, '0');
             const secs = (timeElapsedSeconds % 60).toString().padStart(2, '0');
